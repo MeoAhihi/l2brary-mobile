@@ -1,11 +1,6 @@
-import {
-  Avatar,
-  AvatarFallbackText,
-  AvatarImage,
-} from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
 import { useProfile } from "@/hooks/use-profile";
-import { ScrollView, Text, View } from "react-native";
+import { Image, ScrollView, Text, View } from "react-native";
 
 export default function Profile() {
   const { data, isLoading, isError } = useProfile();
@@ -53,16 +48,16 @@ export default function Profile() {
       }}
     >
       <View style={{ alignItems: "center", marginBottom: 24 }}>
-        <Avatar size="2xl">
-          <AvatarImage
-            source={{
-              uri:
-                data.avatarUrl ||
-                "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80",
-            }}
-          />
-          <AvatarFallbackText>{data.fullName}</AvatarFallbackText>
-        </Avatar>
+        <Image
+          source={{
+            uri: data.avatarUrl ?? "",
+          }}
+          style={{
+            height: 200,
+            width: 200,
+            borderRadius: 100,
+          }}
+        />
         <Text
           style={{
             fontWeight: "bold",

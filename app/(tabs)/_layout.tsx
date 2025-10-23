@@ -12,8 +12,8 @@ import {
 import { Heading } from "@/components/ui/heading";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import React, { useRef, useState } from "react";
-import { PanResponder, Text, View } from "react-native";
+import React, { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 // Extracted Drawer component
 function BottomMenuDrawer({
@@ -49,24 +49,27 @@ function BottomMenuDrawer({
 export default function TabsLayout() {
   const [showDrawer, setShowDrawer] = useState(false);
   // 👇 Swipe-up gesture setup
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Detect finger movement
-        return Math.abs(gestureState.dy) > 20;
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy < -60) {
-          console.log("🆙 Swipe up detected in Tabs!");
-          // 👉 Example action: go to "log-activity" tab
-          setShowDrawer(true);
-        }
-      },
-    })
-  ).current;
+  // const panResponder = useRef(
+  //   PanResponder.create({
+  //     onMoveShouldSetPanResponder: (_, gestureState) => {
+  //       // Detect finger movement
+  //       return Math.abs(gestureState.dy) > 20;
+  //     },
+  //     onPanResponderRelease: (_, gestureState) => {
+  //       if (gestureState.dy < -60) {
+  //         console.log("🆙 Swipe up detected in Tabs!");
+  //         // 👉 Example action: go to "log-activity" tab
+  //         setShowDrawer(true);
+  //       }
+  //     },
+  //   })
+  // ).current;
 
   return (
-    <View {...panResponder.panHandlers} style={{ flex: 1 }}>
+    <View
+      // {...panResponder.panHandlers}
+      style={{ flex: 1 }}
+    >
       <BottomMenuDrawer
         isOpen={showDrawer}
         onClose={() => setShowDrawer(false)}
@@ -132,3 +135,16 @@ export default function TabsLayout() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
+});
