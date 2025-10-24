@@ -1,9 +1,26 @@
 import { Spinner } from "@/components/ui/spinner";
 import { useProfile } from "@/hooks/use-profile";
-import { Image, ScrollView, Text, View } from "react-native";
+import { router } from "expo-router";
+import * as SecureStore from "expo-secure-store";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Profile() {
   const { data, isLoading, isError } = useProfile();
+
+  const onLogout = () => {
+    (async () => {
+      await SecureStore.deleteItemAsync("accessToken");
+      await SecureStore.deleteItemAsync("refreshToken");
+      router.replace("/login");
+    })();
+  };
 
   if (isLoading) {
     return (
@@ -251,6 +268,17 @@ export default function Profile() {
           </Text>
         )}
       </View>
+      <View
+        style={{
+          justifyContent: "center",
+          alignItems: "center",
+          width: "90%",
+        }}
+      >
+        <TouchableOpacity style={[styles.sendButton]} onPress={onLogout}>
+          <Text style={{ color: "#fff", fontWeight: "bold" }}>Đăng xuất</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -269,3 +297,37 @@ function ProfileRow({ label, value }: { label: string; value: any }) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  inputBar: {
+    flexDirection: "column",
+    alignItems: "center",
+    padding: 8,
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
+  input: {
+    flex: 1,
+    height: 40,
+    borderColor: "#eee",
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    marginRight: 8,
+    backgroundColor: "#f7f7f7",
+  },
+  sendButton: {
+    backgroundColor: "#007bff",
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+  },
+  picker: {
+    height: "auto",
+    width: "100%",
+  },
+});

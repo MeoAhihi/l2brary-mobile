@@ -1,94 +1,24 @@
-import { useMyCourses } from "@/hooks/use-my-courses";
+import api from "@/hooks/axios-interceptor";
 import { useProfile } from "@/hooks/use-profile";
-import { ScrollView, Text, View } from "react-native";
+import { useQuery } from "@tanstack/react-query";
+import { Image, ScrollView, Text, View } from "react-native";
 
 export default function Home() {
   const { data: profile, isLoading: isLoadingProfile } = useProfile();
-  const { data: courses, isLoading: isLoadingCourses } = useMyCourses();
-  if (isLoadingProfile || isLoadingCourses) {
+  const { data: upcomingSessions, isLoading: isLoadingSessions } = useQuery({
+    queryKey: ["sessions", "week"],
+    queryFn: async () => {
+      const res = await api.get("/session/week");
+      return res.data;
+    },
+  });
+  if (isLoadingProfile || isLoadingSessions) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <Text>Đang tải dữ liệu...</Text>
       </View>
     );
   }
-
-  // Tính toán thời gian tiếp theo của các khoá học
-  // Giả sử mỗi course có startDate, endDate, startTime, endTime và scheduleType
-  // Ta sẽ tìm thời gian học tới cho từng course (ngày >= hôm nay, ưu tiên hôm nay hoặc lần sau)
-  const now = new Date();
-  const getNextCourseTime = (course: any) => {
-    if (
-      !course.startDate ||
-      !course.endDate ||
-      !course.startTime ||
-      !course.endTime
-    ) {
-      return null;
-    }
-
-    // Lấy ngày bắt đầu và kết thúc
-    const start = new Date(course.startDate + "T00:00:00");
-    const end = new Date(course.endDate + "T23:59:59");
-
-    if (end < now) return null;
-
-    // Xác định các ngày trong tuần diễn ra học (nếu có scheduleDetail, có thể mở rộng)
-    // Nếu không, mặc định giả sử mỗi ngày đều có học trong khoảng thời gian đó
-    // Nếu có scheduleType là "weekday", chỉ lấy các ngày trong tuần thứ 2-6
-    let candidateDates: Date[] = [];
-
-    // Lặp từng ngày một từ hôm nay tới ngày endDate
-    let current = new Date(now);
-    current.setHours(0, 0, 0, 0); // reset về đầu ngày
-
-    while (current <= end) {
-      // Nếu trong khoảng start-end
-      if (current >= start && current <= end) {
-        // Nếu học theo "weekday"
-        if (course.scheduleType === "weekday") {
-          const day = current.getDay(); // 0=CN, 1=T2
-          if (day > 0 && day < 6) {
-            candidateDates.push(new Date(current));
-          }
-        } else if (course.scheduleType === "weekend") {
-          const day = current.getDay();
-          if (day === 0 || day === 6) {
-            candidateDates.push(new Date(current));
-          }
-        } else {
-          // bất kỳ ngày nào
-          candidateDates.push(new Date(current));
-        }
-      }
-      current.setDate(current.getDate() + 1);
-    }
-
-    // Tìm ngày candidate sớm nhất >= hôm nay
-    for (const d of candidateDates) {
-      if (d >= now) {
-        // Trả về object gồm ngày học tới, giờ bắt đầu/kết thúc định dạng string
-        return {
-          date: d,
-          dateString: `${d.getDate().toString().padStart(2, "0")}/${(
-            d.getMonth() + 1
-          )
-            .toString()
-            .padStart(2, "0")}/${d.getFullYear()}`,
-          time: `${course.startTime} - ${course.endTime}`,
-        };
-      }
-    }
-    return null;
-  };
-
-  const upcoming = courses?.courses
-    .filter((c: any) => c.enrollment.status === "approved")
-    .map((c: any) => ({
-      ...c,
-      nextTime: getNextCourseTime(c),
-    }))
-    .filter((c: any) => c.nextTime !== null);
 
   return (
     <View style={{ flex: 1 }}>
@@ -129,6 +59,174 @@ export default function Home() {
         >
           Các buổi học sắp tới của bạn
         </Text>
+        <View>
+          {upcomingSessions && upcomingSessions.length > 0 ? (
+            upcomingSessions.map((session: any) => (
+              <View
+                key={session.id}
+                style={{
+                  width: "90%",
+                  backgroundColor: "#ffffff",
+                  borderRadius: 12,
+                  padding: 18,
+                  marginBottom: 18,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.06,
+                  shadowRadius: 2,
+                  elevation: 2,
+                }}
+              >
+                {session && (
+                  <View style={{ alignItems: "flex-start", marginBottom: 12 }}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "flex-start",
+                        width: "100%",
+                        marginBottom: 12,
+                      }}
+                    >
+                      <Image
+                        source={{ uri: session.thumbnail }}
+                        style={{
+                          width: 80,
+                          height: 80,
+                          borderRadius: 8,
+                          backgroundColor: "#e5e7eb",
+                          marginRight: 16,
+                        }}
+                      />
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={{
+                            fontWeight: "bold",
+                            fontSize: 20,
+                            color: "#141414",
+                            marginBottom: 3,
+                          }}
+                          numberOfLines={2}
+                          ellipsizeMode="tail"
+                        >
+                          {session.title}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Schedule Info */}
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontWeight: "bold",
+                          color: "#64748b",
+                          marginRight: 8,
+                        }}
+                      >
+                        Ngày:
+                      </Text>
+                      <Text style={{ color: "#334155" }}>
+                        {new Date(session.startTime).toLocaleDateString(
+                          "vi-VN",
+                          {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                          }
+                        )}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontWeight: "bold",
+                          color: "#64748b",
+                          marginRight: 8,
+                        }}
+                      >
+                        Thời gian:
+                      </Text>
+                      <Text style={{ color: "#334155" }}>
+                        {new Date(session.startTime).toLocaleTimeString(
+                          "vi-VN",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        )}
+                        {" - "}
+                        {new Date(session.endTime).toLocaleTimeString("vi-VN", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontWeight: "bold",
+                          color: "#64748b",
+                          marginRight: 8,
+                        }}
+                      >
+                        Diễn giả:
+                      </Text>
+                      <Text style={{ color: "#334155" }}>
+                        {session.presenterName ?? "không có"}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontWeight: "bold",
+                          color: "#64748b",
+                          marginRight: 8,
+                        }}
+                      >
+                        Địa điểm:
+                      </Text>
+                      <Text style={{ color: "#334155" }}>
+                        {session.roomInfo} ({session.address})
+                      </Text>
+                    </View>
+                  </View>
+                )}
+                <Text style={{ marginBottom: 8 }}>
+                  {session.description?.length > 0
+                    ? session.description
+                    : "Không có mô tả cho khoá học này."}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text>Bạn chưa tiết học nào tuần này.</Text>
+          )}
+        </View>
       </ScrollView>
     </View>
   );

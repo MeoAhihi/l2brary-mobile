@@ -3,7 +3,7 @@ import { getAccessToken } from "@/lib/token-storage";
 import { useQuery } from "@tanstack/react-query";
 import { jwtDecode as decode } from "jwt-decode";
 import React from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const MyActivites = () => {
@@ -70,4 +70,4 @@ const MyActivites = () => {
 
 export default MyActivites;
 
-const styles = StyleSheet.create({});
+// const styles = StyleSheet.create({});
