@@ -1,31 +1,55 @@
 import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 
-// Save token
+// Helpers for environment/Platform checking
+const isWeb = Platform.OS === "web";
+
+// Access Token
 export async function saveAccessToken(accessToken: string) {
-  await SecureStore.setItemAsync("access-token", accessToken);
+  if (isWeb) {
+    window.localStorage.setItem("access-token", accessToken);
+  } else {
+    await SecureStore.setItemAsync("access-token", accessToken);
+  }
 }
 
-// Get token
-export async function getAccessToken() {
-  return await SecureStore.getItemAsync("access-token");
+export async function getAccessToken(): Promise<string | null> {
+  if (isWeb) {
+    return window.localStorage.getItem("access-token");
+  } else {
+    return await SecureStore.getItemAsync("access-token");
+  }
 }
 
-// Delete token
 export async function deleteAccessToken() {
-  await SecureStore.deleteItemAsync("access-token");
+  if (isWeb) {
+    window.localStorage.removeItem("access-token");
+  } else {
+    await SecureStore.deleteItemAsync("access-token");
+  }
 }
 
-// Save token
+// Refresh Token
 export async function saveRefreshToken(refreshToken: string) {
-  await SecureStore.setItemAsync("refresh-token", refreshToken);
+  if (isWeb) {
+    window.localStorage.setItem("refresh-token", refreshToken);
+  } else {
+    await SecureStore.setItemAsync("refresh-token", refreshToken);
+  }
 }
 
-// Get token
-export async function getRefreshToken() {
-  return await SecureStore.getItemAsync("refresh-token");
+export async function getRefreshToken(): Promise<string | null> {
+  if (isWeb) {
+    return window.localStorage.getItem("refresh-token");
+  } else {
+    return await SecureStore.getItemAsync("refresh-token");
+  }
 }
 
-// Delete token
 export async function deleteRefreshToken() {
-  await SecureStore.deleteItemAsync("refresh-token");
+  if (isWeb) {
+    window.localStorage.removeItem("refresh-token");
+  } else {
+    await SecureStore.deleteItemAsync("refresh-token");
+  }
 }

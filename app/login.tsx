@@ -74,7 +74,7 @@ export default function Login() {
       />
 
       <Text style={styles.registerText}>
-        <Link href="https://google.com">
+        <Link href="https://l2brary-3.vercel.app/register">
           👋 Sau khi nhận được mã mời từ email. Hãy đăng ký bạn nhé
         </Link>
       </Text>
@@ -97,6 +97,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
+    color: "#000",
     borderColor: "#ccc",
     borderRadius: 8,
     padding: 12,
